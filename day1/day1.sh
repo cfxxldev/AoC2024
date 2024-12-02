@@ -10,7 +10,7 @@ part1() {
         diff=${diff/-/}
         gesamt=$(awk "BEGIN {x=${gesamt}; y=${diff}; print x+y;}")
     done
-    echo "$gesamt"
+    echo "Part1: $gesamt"
 }
 
 part2() {
@@ -19,7 +19,7 @@ part2() {
         count=$(echo "${liste2[@]}" | tr " " "\n" | grep -c "${n}")
         gesamt=$(awk "BEGIN {x=${gesamt}; y=(${n} * ${count}); print x+y;}")
     done
-    echo "$gesamt"
+    echo "Part2: $gesamt"
 }
 
 part1
