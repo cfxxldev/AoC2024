@@ -3,10 +3,10 @@
 check_line() {
         line=($1)
         lastsign=-1
-        for i in ${!line[@]}; do
+        for i in "${!line[@]}"; do
             pair=(${line[@]: $i:2})
 
-            if [[ "${#pair[@]}" == "2" ]]; then
+            if [ "${#pair[@]}" -eq "2" ]; then
                 diff=$(awk "BEGIN {x=${pair[0]}; y=${pair[1]}; print y-x;}")
                 sign=$(awk "BEGIN {x=${diff}; print x<0;}")
 
