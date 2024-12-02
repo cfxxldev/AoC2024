@@ -7,8 +7,8 @@ check_line() {
             pair=(${line[@]: $i:2})
 
             if [ "${#pair[@]}" -eq "2" ]; then
-                diff=$(awk "BEGIN {x=${pair[0]}; y=${pair[1]}; print y-x;}")
-                sign=$(awk "BEGIN {x=${diff}; print x<0;}")
+                diff=$((pair[1] - pair[0]))
+                sign=$((diff<0))
 
                 if [ "$lastsign" -ge "0" ]; then
                     if [ "$sign" -ne "$lastsign" ]; then
@@ -51,11 +51,11 @@ both_parts() {
     while read p; do
         err_index=$(check_line "${p}")
         if [ "$err_index" -lt "0" ]; then
-            count_part1=$(awk "BEGIN {x=${count_part1}; print x + 1;}")
-            count_part2=$(awk "BEGIN {x=${count_part2}; print x + 1;}")
+            count_part1=$((count_part1+1))
+            count_part2=$((count_part2+1))
         else
             if [ "$(retry "${p}")" -ne "0" ]; then
-                count_part2=$(awk "BEGIN {x=${count_part2}; print x + 1;}")
+                count_part2=$((count_part2+1))
             fi
         fi
     done <input
