@@ -36,9 +36,7 @@ func part2() -> Int {
             return 0
         case (_, "mul", .some(let param1), .some(let param2)):
             if case (.some(let p1), .some(let p2)) = (Int(param1), Int(param2)) {
-                return [p1, p2].reduce(mul) {
-                    sum, value in sum * value
-                }
+                return mul * p1 * p2
             }
             return 0
         default:
