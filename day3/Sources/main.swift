@@ -2,10 +2,9 @@ import Foundation
 
 func read_file() -> String {
     do {
-        let dir = URL(filePath: FileManager.default.currentDirectoryPath)
-        let inputUrl = dir.appendingPathComponent("input")
-
-        return try String(contentsOf: inputUrl, encoding: .ascii)
+        return try String(
+            contentsOf: URL(filePath: FileManager.default.currentDirectoryPath)
+                .appendingPathComponent("input"), encoding: .ascii)
     } catch {
         print(error)
         exit(1)
@@ -23,41 +22,31 @@ func part1() {
 }
 
 func part2() {
-    do {
-        let content = read_file()
-        let regex: Regex<(Substring, Substring?, Substring?, Substring?, Substring?, Substring?)> =
-            try Regex("(do)\\(\\)|(don't)\\(\\)|(mul)\\((\\d{1,3}),(\\d{1,3})\\)")
+    let content = read_file()
+    let regex: Regex<(Substring, Substring, Substring?, Substring?)> =
+        /(?:(do|don't|mul))\((?:(?:)|(\d+)\,(\d+))\)/
 
-        var mul = true
-        let summe = content.matches(of: regex).compactMap { m in
-            (m.output.1 ?? m.output.2 ?? m.output.3).map { o in
-                switch o {
-                case "do":
-                    mul = true
-                    return 0
-                case "don't":
-                    mul = false
-                    return 0
-                case "mul":
-                    if mul {
-                        let x = Int(m.output.4 ?? "0")!
-                        let y = Int(m.output.5 ?? "0")!
-                        return (x) * (y)
-                    }
-                    return 0
-                default:
-                    return 0
-                }
+    var mul = 1
+    let summe = content.matches(of: regex).compactMap { m in
+        switch m.output {
+        case (_, "do", nil, nil):
+            mul = 1
+            return 0
+        case (_, "don't", nil, nil):
+            mul = 0
+            return 0
+        case (_, "mul", .some(let param1), .some(let param2)):
+            return [param1, param2].compactMap { Int($0) }.reduce(mul) {
+                sum, value in sum * value
             }
-        }.reduce(0) { partialResult, value in
-            partialResult + value
+        default:
+            return 0
         }
-
-        print(summe)
-    } catch {
-        print(error)
-
+    }.reduce(0) { partialResult, value in
+        partialResult + value
     }
+
+    print(summe)
 }
 
 part1()

@@ -149,3 +149,7 @@ ipch/
 
 # kate
 *.kate-swp
+
+# zig
+zig-out/
+.zig-cache/
