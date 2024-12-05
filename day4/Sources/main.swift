@@ -2,15 +2,15 @@ import Foundation
 
 func read_file() -> String {
     do {
-        let dir = URL(filePath: FileManager.default.currentDirectoryPath)
-        let inputUrl = dir.appendingPathComponent("input")
-
-        return try String(contentsOf: inputUrl, encoding: .ascii)
+        return try String(
+            contentsOf: URL(filePath: FileManager.default.currentDirectoryPath)
+                .appendingPathComponent("input"), encoding: .ascii)
     } catch {
         print(error)
         exit(1)
     }
 }
+
 enum directions: Int, CaseIterable {
 
     case UpLeft = 0
@@ -33,8 +33,7 @@ let width = data[0].count
 let height = data.count
 
 func get_character(x: Int, y: Int) -> Character {
-    if x < 0 || y < 0 || x >= width || y >= height { "_" }
-    else {data[y][x]}
+    if x < 0 || y < 0 || x >= width || y >= height { "_" } else { data[y][x] }
 }
 
 func read_string_directional(start_x: Int, start_y: Int, direction: directions, len: Int)
@@ -78,16 +77,17 @@ func count_MAS(start_x: Int, start_y: Int) -> Int {
     }.count
 }
 
-print(
+func part1() -> Int {
     data.enumerated().reduce(0) { summe, row in
         summe
             + row.element.enumerated().filter({ (_, c) in c == "X" }).reduce(0) {
                 summe_row, column in
                 summe_row + count_XMAS(start_x: column.offset, start_y: row.offset)
             }
-    })
+    }
+}
 
-print(
+func part2() -> Int {
     data.enumerated().reduce(0) { summe, row in
         summe
             + row.element.enumerated().filter({ (_, c) in c == "A" }).compactMap { column in
@@ -95,4 +95,8 @@ print(
             }.filter { anzahl in
                 anzahl == 2
             }.count
-    })
+    }
+}
+
+print("part1: \(part1())")
+print("part2: \(part2())")
