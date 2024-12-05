@@ -1,51 +1,51 @@
 import Foundation
 
-let contents = read_file().split(separator: "\n\n")
+let contents = readFile().split(separator: "\n\n")
 let catalog = contents[0].matches(of: /(\d+)\|(\d+)/).compactMap { m in
-  if case let (.some(l), .some(r)) = (Int(m.output.1), Int(m.output.2)) {
-    (l, r)
+  if case (.some(let leftIndex), .some(let rightIndex)) = (Int(m.output.1), Int(m.output.2)) {
+    (leftIndex, rightIndex)
   } else {
     nil
   }
 }
-let number_lines =
+let numberLines =
   contents[1].split(separator: "\n").compactMap { line in
     line.split(separator: ",").compactMap { s in Int(s) }
   }
 
-enum ordering_status: Equatable {
+enum OrderingStatus: Equatable {
   case ordered
-  case unordered(left_index: Int, right_index: Int)
+  case unordered(leftIndex: Int, rightIndex: Int)
 }
 
 func part1() -> Int {
-  number_lines.filter { numbers in check_ordering(numbers: numbers) == .ordered }
+  numberLines.filter { numbers in checkOrdering(numbers: numbers) == .ordered }
     .compactMap { numbers in
       numbers[(numbers.count / 2)]
     }.reduce(0, +)
 }
 
 func part2() -> Int {
-  number_lines.filter { numbers in check_ordering(numbers: numbers) != .ordered }
-    .compactMap(ensure_ordering).compactMap { numbers in
+  numberLines.filter { numbers in checkOrdering(numbers: numbers) != .ordered }
+    .compactMap(ensureOrdering).compactMap { numbers in
       numbers[(numbers.count / 2)]
     }.reduce(0, +)
 }
 
-func ensure_ordering(numbers: [Int]) -> [Int] {
-  switch check_ordering(numbers: numbers) {
+func ensureOrdering(numbers: [Int]) -> [Int] {
+  switch checkOrdering(numbers: numbers) {
   case .ordered:
     numbers
-  case .unordered(let left_index, let right_index):
-    ensure_ordering(
-      numbers: numbers_with_swap(
-        numbers: numbers, left_index: left_index, right_index: right_index))
+  case .unordered(let leftIndex, let rightIndex):
+    ensureOrdering(
+      numbers: numbersWithSwap(
+        numbers: numbers, leftIndex: leftIndex, rightIndex: rightIndex))
   }
 }
 
-func check_ordering(numbers: [Int]) -> ordering_status {
+func checkOrdering(numbers: [Int]) -> OrderingStatus {
   for entry in catalog {
-    if case let status = check_ordering(
+    if case let status = checkOrdering(
       numbers: numbers, entry: entry), case .unordered(_, _) = status
     {
       return status
@@ -54,20 +54,20 @@ func check_ordering(numbers: [Int]) -> ordering_status {
   return .ordered
 }
 
-func check_ordering(numbers: [Int], entry: (l: Int, r: Int)) -> ordering_status {
-  guard let left_index: Int = numbers.firstIndex(of: entry.l) else { return .ordered }
-  guard let right_index: Int = numbers.firstIndex(of: entry.r) else { return .ordered }
-  return (left_index <= right_index)
-    ? .ordered : .unordered(left_index: left_index, right_index: right_index)
+func checkOrdering(numbers: [Int], entry: (l: Int, r: Int)) -> OrderingStatus {
+  guard let leftIndex: Int = numbers.firstIndex(of: entry.l) else { return .ordered }
+  guard let rightIndex: Int = numbers.firstIndex(of: entry.r) else { return .ordered }
+  return (leftIndex <= rightIndex)
+    ? .ordered : .unordered(leftIndex: leftIndex, rightIndex: rightIndex)
 }
 
-func numbers_with_swap(numbers: [Int], left_index: Int, right_index: Int) -> [Int] {
-  var new_numbers = numbers
-  new_numbers.swapAt(left_index, right_index)
-  return new_numbers
+func numbersWithSwap(numbers: [Int], leftIndex: Int, rightIndex: Int) -> [Int] {
+  var newNumbers = numbers
+  newNumbers.swapAt(leftIndex, rightIndex)
+  return newNumbers
 }
 
-func read_file() -> String {
+func readFile() -> String {
   do {
     return try String(
       contentsOf: URL(filePath: FileManager.default.currentDirectoryPath)
