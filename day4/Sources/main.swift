@@ -1,101 +1,98 @@
 import Foundation
 
 func read_file() -> String {
-    do {
-        return try String(
-            contentsOf: URL(filePath: FileManager.default.currentDirectoryPath)
-                .appendingPathComponent("input"), encoding: .ascii)
-    } catch {
-        print(error)
-        exit(1)
-    }
+  do {
+    return try String(
+      contentsOf: URL(filePath: FileManager.default.currentDirectoryPath)
+        .appendingPathComponent("input"), encoding: .ascii)
+  } catch {
+    print(error)
+    exit(1)
+  }
 }
 
 enum directions: Int, CaseIterable {
 
-    case UpLeft = 0
-    case Left = 1
-    case DownLeft = 2
-    case Up = 3
-    case Down = 4
-    case UpRight = 5
-    case Right = 6
-    case DownRight = 7
+  case UpLeft = 0
+  case Left = 1
+  case DownLeft = 2
+  case Up = 3
+  case Down = 4
+  case UpRight = 5
+  case Right = 6
+  case DownRight = 7
 }
 
 let direction_values = [
-    (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1),
+  (-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1),
 ]
 let data = read_file().components(separatedBy: "\n").filter({ s in !s.isEmpty }).map { s in
-    Array(s)
+  Array(s)
 }
 let width = data[0].count
 let height = data.count
 
 func get_character(x: Int, y: Int) -> Character {
-    if x < 0 || y < 0 || x >= width || y >= height { "_" } else { data[y][x] }
+  if x < 0 || y < 0 || x >= width || y >= height { "_" } else { data[y][x] }
 }
 
 func read_string_directional(start_x: Int, start_y: Int, direction: directions, len: Int)
-    -> String
+  -> String
 {
-    if len <= 1 {
-        String(get_character(x: start_x, y: start_y))
-    } else {
-        String(get_character(x: start_x, y: start_y))
-            + read_string_directional(
-                start_x: start_x + direction_values[direction.rawValue].0,
-                start_y: start_y + direction_values[direction.rawValue].1, direction: direction,
-                len: len - 1)
-    }
+  if len <= 1 {
+    String(get_character(x: start_x, y: start_y))
+  } else {
+    String(get_character(x: start_x, y: start_y))
+      + read_string_directional(
+        start_x: start_x + direction_values[direction.rawValue].0,
+        start_y: start_y + direction_values[direction.rawValue].1, direction: direction,
+        len: len - 1)
+  }
 }
 
 func count_XMAS(start_x: Int, start_y: Int) -> Int {
-    directions.allCases.compactMap { direction in
-        read_string_directional(
-            start_x: start_x, start_y: start_y,
-            direction: direction, len: 4)
-    }.filter { s in
-        s == "XMAS"
-    }.count
+  directions.allCases.compactMap { direction in
+    read_string_directional(
+      start_x: start_x, start_y: start_y,
+      direction: direction, len: 4)
+  }.filter { s in
+    s == "XMAS"
+  }.count
 }
 
 func count_MAS(start_x: Int, start_y: Int) -> Int {
-    [
-        (directions.UpLeft, directions.DownRight),
-        (.UpRight, .DownLeft),
-        (.DownLeft, .UpRight),
-        (.DownRight, .UpLeft),
-    ].compactMap {
-        (start_direction, read_direction) in
-        read_string_directional(
-            start_x: start_x + direction_values[start_direction.rawValue].0,
-            start_y: start_y + direction_values[start_direction.rawValue].1,
-            direction: read_direction, len: 3)
-    }.filter { s in
-        s == "MAS"
-    }.count
+  [
+    (directions.UpLeft, directions.DownRight),
+    (.UpRight, .DownLeft),
+    (.DownLeft, .UpRight),
+    (.DownRight, .UpLeft),
+  ].compactMap {
+    (start_direction, read_direction) in
+    read_string_directional(
+      start_x: start_x + direction_values[start_direction.rawValue].0,
+      start_y: start_y + direction_values[start_direction.rawValue].1,
+      direction: read_direction, len: 3)
+  }.filter { s in
+    s == "MAS"
+  }.count
 }
 
 func part1() -> Int {
-    data.enumerated().reduce(0) { summe, row in
-        summe
-            + row.element.enumerated().filter({ (_, c) in c == "X" }).reduce(0) {
-                summe_row, column in
-                summe_row + count_XMAS(start_x: column.offset, start_y: row.offset)
-            }
-    }
+  data.enumerated().compactMap { row in
+    row.element.enumerated().filter({ (_, c) in c == "X" }).compactMap { column in
+      count_XMAS(start_x: column.offset, start_y: row.offset)
+    }.reduce(0, +)
+  }.reduce(0, +)
 }
 
 func part2() -> Int {
-    data.enumerated().reduce(0) { summe, row in
-        summe
-            + row.element.enumerated().filter({ (_, c) in c == "A" }).compactMap { column in
-                count_MAS(start_x: column.offset, start_y: row.offset)
-            }.filter { anzahl in
-                anzahl == 2
-            }.count
-    }
+  data.enumerated().compactMap { row in
+    row.element.enumerated().filter({ (_, c) in c == "A" }).compactMap { column in
+      count_MAS(start_x: column.offset, start_y: row.offset)
+    }.filter { anzahl in
+      anzahl == 2
+    }.count
+  }.reduce(0, +)
 }
 
 print("part1: \(part1())")
