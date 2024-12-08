@@ -41,7 +41,7 @@ func part2() -> Int {
     antennas.filter { nextAntenna in
       currentAntenna.typ == nextAntenna.typ && currentAntenna.coord != nextAntenna.coord
     }
-    .compactMap { nextAntenna -> [Point] in
+    .compactMap { nextAntenna in
       pointsInDirection(
         point: currentAntenna.coord, direction: currentAntenna.coord - nextAntenna.coord)
     }.reduce([], +)
