@@ -7,6 +7,14 @@ extension Sequence where Element: Hashable {
   }
 }
 
+extension Sequence where Element: Sequence {
+  func flattened() -> [Element.Element] {
+    return reduce([], +)
+  }
+}
+
+let splitLines = readFile().split(separator: "\n")
+
 func readFile() -> String {
   do {
     return try String(

@@ -14,53 +14,51 @@ struct Point: Comparable, Hashable {
 }
 
 struct Antenna {
-  var typ: Character
+  var type: Character
   var coord: Point
 }
 
-let antennas = readFile().split(separator: "\n").enumerated().compactMap { (y, row) in
-  row.enumerated().filter { (x, char) in char != "." }.compactMap { (x, char) in
-    Antenna(typ: char, coord: Point(x: x, y: y))
-  }
-}.reduce([], +)
+let antennas: [Antenna] = splitLines.enumerated().compactMap(row).flattened()
 
 func part1() -> Int {
-  antennas.compactMap { currentAntenna in
-    antennas.filter { nextAntenna in
-      currentAntenna.typ == nextAntenna.typ && currentAntenna.coord != nextAntenna.coord
-    }
-    .compactMap { nextAntenna in
-      pointInDirection(
-        point: currentAntenna.coord, direction: currentAntenna.coord - nextAntenna.coord)
-    }.filter(isValidPoint)
-  }.reduce([], +).uniqued().count
+  antinodes { (point, direction) in
+    [point + direction]
+  }.count
 }
 
 func part2() -> Int {
+  antinodes { (point, direction) in
+    pointsInDirection(
+      point: point, direction: direction)
+  }.count
+}
+
+func antinodes(_ transform: (Point, Point) -> [Point]) -> [Point] {
   antennas.compactMap { currentAntenna in
     antennas.filter { nextAntenna in
-      currentAntenna.typ == nextAntenna.typ && currentAntenna.coord != nextAntenna.coord
+      currentAntenna.type == nextAntenna.type && currentAntenna.coord != nextAntenna.coord
     }
     .compactMap { nextAntenna in
-      pointsInDirection(
-        point: currentAntenna.coord, direction: currentAntenna.coord - nextAntenna.coord)
-    }.reduce([], +)
-  }.reduce([], +).uniqued().count
+      transform(currentAntenna.coord, currentAntenna.coord - nextAntenna.coord).filter(isValidPoint)
+    }.flattened()
+  }.flattened().uniqued()
+}
+
+func row(y: Int, row: Substring) -> [Antenna] {
+  row.enumerated().filter { (x, char) in char != "." }.compactMap { (x, char) in
+    Antenna(type: char, coord: Point(x: x, y: y))
+  }
 }
 
 func isValidPoint(_ point: Point) -> Bool {
   point.x >= 0 && point.y >= 0 && point.x < 50 && point.y < 50
 }
 
-func pointInDirection(point: Point, direction: Point) -> Point {
-  point + direction
-}
-
 func pointsInDirection(point: Point, direction: Point) -> [Point] {
   if isValidPoint(point) {
     [point]
       + pointsInDirection(
-        point: pointInDirection(point: point, direction: direction), direction: direction)
+        point: point + direction, direction: direction)
   } else {
     []
   }
