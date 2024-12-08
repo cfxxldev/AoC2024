@@ -25,7 +25,7 @@ let antennas = readFile().split(separator: "\n").enumerated().compactMap { (y, r
 }.reduce([], +)
 
 func part1() -> Int {
-  antennas.enumerated().compactMap { (index, currentAntenna) in
+  antennas.compactMap { currentAntenna in
     antennas.filter { nextAntenna in
       currentAntenna.typ == nextAntenna.typ && currentAntenna.coord != nextAntenna.coord
     }
@@ -48,7 +48,7 @@ func part2() -> Int {
   }.reduce([], +).uniqued().count
 }
 
-func isValidPoint(point: Point) -> Bool {
+func isValidPoint(_ point: Point) -> Bool {
   point.x >= 0 && point.y >= 0 && point.x < 50 && point.y < 50
 }
 
@@ -57,7 +57,7 @@ func pointInDirection(point: Point, direction: Point) -> Point {
 }
 
 func pointsInDirection(point: Point, direction: Point) -> [Point] {
-  if isValidPoint(point: point) {
+  if isValidPoint(point) {
     [point]
       + pointsInDirection(
         point: pointInDirection(point: point, direction: direction), direction: direction)
