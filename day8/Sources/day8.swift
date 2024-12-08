@@ -25,7 +25,7 @@ let antennas = readFile().split(separator: "\n").enumerated().compactMap { (y, r
 }.reduce([], +)
 
 func part1() -> Int {
-  antennas.enumerated().compactMap { (index, currentAntenna) in
+  antennas.compactMap { currentAntenna in
     antennas.filter { nextAntenna in
       currentAntenna.typ == nextAntenna.typ && currentAntenna.coord != nextAntenna.coord
     }
