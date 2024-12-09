@@ -11,11 +11,6 @@ extension Sequence where Element: Sequence {
   func flattened() -> [Element.Element] {
     return reduce([], +)
   }
-  func toArray() -> [[Element.Element]] {
-    return compactMap { e in
-      e.toArray()
-    }
-  }
 }
 
 extension Sequence {
@@ -41,6 +36,22 @@ extension Sequence {
 
   func toArray() -> [Element] {
     Array(self)
+  }
+}
+
+extension Array {
+  mutating func swapAt(_ leftIndex: Index, _ rightIndex: Index, count: Int) {
+    for i in 0..<count {
+      self.swapAt(leftIndex + i, rightIndex + i)
+    }
+  }
+  func swappedAt(_ leftIndex: Index, _ rightIndex: Index, count: Int) -> [Element] {
+    var newArray = self
+    newArray.swapAt(leftIndex, rightIndex, count: count)
+    return newArray
+  }
+  func swappedAt(_ leftIndex: Index, _ rightIndex: Index) -> [Element] {
+    swappedAt(leftIndex, rightIndex, count: 1)
   }
 }
 
