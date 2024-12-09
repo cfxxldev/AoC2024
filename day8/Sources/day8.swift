@@ -1,17 +1,4 @@
-struct Point: Comparable, Hashable {
-  var x: Int
-  var y: Int
-
-  static func < (lhs: Self, rhs: Self) -> Bool {
-    lhs.x < rhs.x || ((lhs.x == rhs.x) && (lhs.y < rhs.y))
-  }
-  static func - (lhs: Self, rhs: Self) -> Self {
-    Self(x: lhs.x - rhs.x, y: lhs.y - rhs.y)
-  }
-  static func + (lhs: Self, rhs: Self) -> Self {
-    Self(x: lhs.x + rhs.x, y: lhs.y + rhs.y)
-  }
-}
+typealias Point = SIMD2<Int>
 
 struct Antenna {
   var type: Character
@@ -22,7 +9,7 @@ let antennas: [Antenna] = splitLines.enumerated().compactMap(row).flattened()
 
 func part1() -> Int {
   antinodes { (point, direction) in
-    [point + direction]
+    [point &+ direction]
   }.count
 }
 
@@ -39,7 +26,8 @@ func antinodes(_ transform: (Point, Point) -> [Point]) -> [Point] {
       currentAntenna.type == nextAntenna.type && currentAntenna.coord != nextAntenna.coord
     }
     .compactMap { nextAntenna in
-      transform(currentAntenna.coord, currentAntenna.coord - nextAntenna.coord).filter(isValidPoint)
+      transform(currentAntenna.coord, currentAntenna.coord &- nextAntenna.coord).filter(
+        isValidPoint)
     }.flattened()
   }.flattened().uniqued()
 }
@@ -58,7 +46,7 @@ func pointsInDirection(point: Point, direction: Point) -> [Point] {
   if isValidPoint(point) {
     [point]
       + pointsInDirection(
-        point: point + direction, direction: direction)
+        point: point &+ direction, direction: direction)
   } else {
     []
   }
