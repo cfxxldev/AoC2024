@@ -9,20 +9,22 @@ struct DiscData {
     var freeRanges: [Range<Int>] = []
     self.decodedContent = fileContent.compactMap(toInt).enumerated().compactMap {
       (index: Int, len: Int) -> [Int?] in
+      let newRange = Range<Int>(uncheckedBounds: (lower: currentIndex, upper: currentIndex + len))
       if index % 2 == 0 {
-        usedRanges.append(
-          Range<Int>(uncheckedBounds: (lower: currentIndex, upper: currentIndex + len)))
-        currentIndex += len
+        currentIndex += Self.appendRange(&usedRanges, append: newRange)
         return Array(repeating: .some(index / 2), count: len)
       } else {
-        freeRanges.append(
-          Range<Int>(uncheckedBounds: (lower: currentIndex, upper: currentIndex + len)))
-        currentIndex += len
+        currentIndex += Self.appendRange(&freeRanges, append: newRange)
         return Array(repeating: .none, count: len)
       }
     }.flattened()
     self.usedRanges = usedRanges
     self.freeRanges = freeRanges
+  }
+
+  private static func appendRange(_ array: inout [Range<Int>], append: Range<Int>) -> Int {
+    array.append(append)
+    return append.count
   }
 }
 
