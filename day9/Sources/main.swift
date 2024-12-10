@@ -14,24 +14,34 @@ extension Sequence where Element: Sequence {
 }
 
 extension Sequence {
-  func slide(_ maxLen: Int) -> [[Element]] {
+  func slide(_ maxLen: Int) -> [ArraySlice<Element>] {
     enumerated().compactMap { (index, _) in
-      self.dropFirst(index).prefix(maxLen).toArray()
+      ArraySlice(self.dropFirst(index).prefix(maxLen))
     }
   }
 
-  func slide(exactLen: Int) -> [[Element]] {
+  func slide(exactLen: Int) -> [ArraySlice<Element>] {
     slide(exactLen).filter { $0.count == exactLen }
   }
 
-  func chunk(_ maxLen: Int) -> [[Element]] {
+  func chunk(_ maxLen: Int) -> [ArraySlice<Element>] {
     enumerated().filter { (index, _) in index % maxLen == 0 }.compactMap { (index, _) in
-      self.dropFirst(index).prefix(maxLen).toArray()
+      ArraySlice(self.dropFirst(index).prefix(maxLen))
     }
   }
 
-  func chunk(exactLen: Int) -> [[Element]] {
+  func chunk(exactLen: Int) -> [ArraySlice<Element>] {
     chunk(exactLen).filter { $0.count == exactLen }
+  }
+
+  func swappedAt(_ leftIndex: Array.Index, _ rightIndex: Array.Index, count: Int) -> [Element] {
+    var newArray = self.toArray()
+    newArray.swapAt(leftIndex, rightIndex, count: count)
+    return newArray
+  }
+
+  func swappedAt(_ leftIndex: Array.Index, _ rightIndex: Array.Index) -> [Element] {
+    swappedAt(leftIndex, rightIndex, count: 1)
   }
 
   func toArray() -> [Element] {
@@ -45,21 +55,13 @@ extension Array {
       self.swapAt(leftIndex + i, rightIndex + i)
     }
   }
-  func swappedAt(_ leftIndex: Index, _ rightIndex: Index, count: Int) -> [Element] {
-    var newArray = self
-    newArray.swapAt(leftIndex, rightIndex, count: count)
-    return newArray
-  }
-  func swappedAt(_ leftIndex: Index, _ rightIndex: Index) -> [Element] {
-    swappedAt(leftIndex, rightIndex, count: 1)
-  }
 }
 
 func toInt(value: Character) -> Int? {
   Int(String(value))
 }
 
-func toInt(value: any StringProtocol) -> Int? {
+func toInt(value: some StringProtocol) -> Int? {
   Int(value)
 }
 
