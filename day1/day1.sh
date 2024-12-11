@@ -1,21 +1,21 @@
-#/bin/sh
-
-liste1=($(cat input | awk '{print $1}' | sort))
-liste2=($(cat input | awk '{print $2}' | sort))
+#!/bin/bash
+mapfile -t liste1 < <( awk '{print $1}' < input | sort)
+mapfile -t liste2 < <( awk '{print $2}' < input | sort)
 
 part1() {
-    gesamt=0
+    local gesamt=0
     for i in "${!liste1[@]}"; do
-        diff=$((liste2[i] - liste1[i]))
-        diff=${diff/-/}
+        local diff=$((liste2[i] - liste1[i]))
+        diff=${diff#-}
         gesamt=$((gesamt + diff))
     done
     echo "Part1: $gesamt"
 }
 
 part2() {
-    gesamt=0
+    local gesamt=0
     for n in "${liste1[@]}"; do
+        local count
         count=$(echo "${liste2[@]}" | tr " " "\n" | grep -c "${n}")
         gesamt=$((gesamt + (n * count)))
     done
