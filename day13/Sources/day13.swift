@@ -1,6 +1,5 @@
 import RegexBuilder
 
-typealias Vector2D = SIMD2<Int64>
 typealias Vector3D = SIMD3<Int64>
 struct Block {
   var a: Vector3D
