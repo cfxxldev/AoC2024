@@ -1,56 +1,85 @@
+import RegexBuilder
+
 typealias Equation = SIMD3<Int64>
 struct Block {
-  var e1: Equation
-  var e2: Equation
+  var x: Equation
+  var y: Equation
 
   init() {
-    self.e1 = Equation.zero
-    self.e2 = Equation.zero
+    self.x = Equation.zero
+    self.y = Equation.zero
   }
 }
 
 let blocks = fileContent.split(separator: "\n\n").compactMap { s in
   s.split(separator: "\n")
-}
+}.compactMap(parseBlock)
 
 func part1() -> Int64 {
-  blocks.compactMap(parseBlock).compactMap(solveBlock).filter { (buttonA, buttonB) in
+  blocks.compactMap(solveBlock).filter { (buttonA, buttonB) in
     buttonA <= 100 && buttonB <= 100
   }.compactMap { (buttonA, buttonB) in
     buttonA * 3 + buttonB
-  }.flattened()
+  }.reduce(0, +)
 }
+
 func part2() -> Int64 {
   let offset = Equation([0, 0, 10_000_000_000_000])
-  return blocks.compactMap(parseBlock).compactMap { blockOld in
+  return blocks.compactMap { blockOld in
     var block = blockOld
-    block.e1 &+= offset
-    block.e2 &+= offset
+    block.x &+= offset
+    block.y &+= offset
     return block
   }.compactMap(solveBlock).compactMap { (buttonA, buttonB) in
     buttonA * 3 + buttonB
-  }.flattened()
+  }.reduce(0, +)
 }
 
 func parseBlock(block: [Substring]) -> Block {
-  let regex_A = /Button (A): X\+(\d+), Y\+(\d+)/
-  let regex_B = /Button (B): X\+(\d+), Y\+(\d+)/
-  let regex_Prize = /(P)rize: X\=(\d+), Y\=(\d+)/
+  let regex = Regex {
+    Capture {
+      ChoiceOf {
+        "Button A"
+        "Button B"
+        "Prize"
+      }
+    }
+    ": "
+    ChoiceOf {
+      "X+"
+      "X="
+    }
+    TryCapture {
+      OneOrMore(.digit)
+    } transform: { s in
+      Int64(s)
+    }
+    ", "
+    ChoiceOf {
+      "Y+"
+      "Y="
+    }
+    TryCapture {
+      OneOrMore(.digit)
+    } transform: { s in
+      Int64(s)
+    }
+  }
 
   return block.compactMap { s in
-    s.firstMatch(of: regex_A) ?? s.firstMatch(of: regex_B) ?? s.firstMatch(of: regex_Prize)
+    s.firstMatch(of: regex)
   }.reduce(into: Block()) {
     block, match in
     switch match.output {
-    case (_, "A", let x, let y):
-      block.e1[0] = Int64(x)!
-      block.e2[0] = Int64(y)!
-    case (_, "B", let x, let y):
-      block.e1[1] = Int64(x)!
-      block.e2[1] = Int64(y)!
-    case (_, "P", let x, let y):
-      block.e1[2] = Int64(x)!
-      block.e2[2] = Int64(y)!
+    case (_, "Button A", let x, let y):
+      block.x[0] = x
+      block.y[0] = y
+    case (_, "Button B", let x, let y):
+      block.x[1] = x
+      block.y[1] = y
+    case (_, "Prize", let x, let y):
+      block.x[2] = x
+      block.y[2] = y
     default: return
     }
   }
@@ -58,13 +87,13 @@ func parseBlock(block: [Substring]) -> Block {
 
 func solveBlock(block: Block) -> (buttonA: Int64, buttonB: Int64)? {
   let buttonA =
-    (block.e1[2] * block.e2[1] - block.e1[1] * block.e2[2])
-    / (block.e1[0] * block.e2[1] - block.e1[1] * block.e2[0])
-  let buttonB = (block.e2[2] - buttonA * block.e2[0]) / block.e2[1]
+    (block.x[2] * block.y[1] - block.x[1] * block.y[2])
+    / (block.x[0] * block.y[1] - block.x[1] * block.y[0])
+  let buttonB = (block.y[2] - buttonA * block.y[0]) / block.y[1]
 
   guard
-    ((block.e1[0] * buttonA + block.e1[1] * buttonB) == block.e1[2])
-      && ((block.e2[0] * buttonA + block.e2[1] * buttonB) == block.e2[2])
+    ((block.x[0] * buttonA + block.x[1] * buttonB) == block.x[2])
+      && ((block.y[0] * buttonA + block.y[1] * buttonB) == block.y[2])
   else {
     return nil
   }
