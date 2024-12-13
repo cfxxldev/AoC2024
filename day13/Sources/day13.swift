@@ -1,5 +1,3 @@
-import RegexBuilder
-
 typealias Equation = SIMD3<Int64>
 struct Block {
   var e1: Equation
