@@ -1,13 +1,14 @@
 import RegexBuilder
 
-typealias Equation = SIMD3<Int64>
+typealias Vector2D = SIMD2<Int64>
+typealias Vector3D = SIMD3<Int64>
 struct Block {
-  var x: Equation
-  var y: Equation
+  var a: Vector3D
+  var b: Vector3D
 
   init() {
-    self.x = Equation.zero
-    self.y = Equation.zero
+    self.a = Vector3D.zero
+    self.b = Vector3D.zero
   }
 }
 
@@ -24,11 +25,11 @@ func part1() -> Int64 {
 }
 
 func part2() -> Int64 {
-  let offset = Equation([0, 0, 10_000_000_000_000])
+  let offset = Vector3D([0, 0, 10_000_000_000_000])
   return blocks.compactMap { blockOld in
     var block = blockOld
-    block.x &+= offset
-    block.y &+= offset
+    block.a &+= offset
+    block.b &+= offset
     return block
   }.compactMap(solveBlock).compactMap { (buttonA, buttonB) in
     buttonA * 3 + buttonB
@@ -71,31 +72,38 @@ func parseBlock(block: [Substring]) -> Block {
   }.reduce(into: Block()) {
     block, match in
     switch match.output {
-    case (_, "Button A", let x, let y):
-      block.x[0] = x
-      block.y[0] = y
-    case (_, "Button B", let x, let y):
-      block.x[1] = x
-      block.y[1] = y
-    case (_, "Prize", let x, let y):
-      block.x[2] = x
-      block.y[2] = y
+    case (_, "Button A", let ax, let bx):
+      block.a.x = ax
+      block.b.x = bx
+    case (_, "Button B", let ay, let by):
+      block.a.y = ay
+      block.b.y = by
+    case (_, "Prize", let az, let bz):
+      block.a.z = az
+      block.b.z = bz
     default: return
     }
   }
 }
 
+func shiftProduct(_ a: Vector3D, _ b: Vector3D) -> Vector3D {
+  Vector3D(a.y, a.z, a.x) &* Vector3D(b.z, b.x, b.y)
+}
+func crossProduct(_ a: Vector3D, _ b: Vector3D) -> Vector3D {
+  return shiftProduct(a, b) &- shiftProduct(b, a)
+}
+func dotProduct(_ a: Vector3D, _ b: Vector3D) -> Int64 {
+  (a &* b).wrappedSum()
+}
 func solveBlock(block: Block) -> (buttonA: Int64, buttonB: Int64)? {
-  let buttonA =
-    (block.x[2] * block.y[1] - block.x[1] * block.y[2])
-    / (block.x[0] * block.y[1] - block.x[1] * block.y[0])
-  let buttonB = (block.y[2] - buttonA * block.y[0]) / block.y[1]
+  let cross = crossProduct(block.a, block.b)
+  let buttons = cross / (-cross.z)
 
   guard
-    ((block.x[0] * buttonA + block.x[1] * buttonB) == block.x[2])
-      && ((block.y[0] * buttonA + block.y[1] * buttonB) == block.y[2])
+    ((dotProduct(block.a, buttons)) == 0)
+      && (dotProduct(block.b, buttons) == 0)
   else {
     return nil
   }
-  return (buttonA: buttonA, buttonB: buttonB)
+  return (buttonA: buttons.x, buttonB: buttons.y)
 }
