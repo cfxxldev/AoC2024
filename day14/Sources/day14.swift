@@ -12,14 +12,14 @@ func part1() -> Num {
   let middle = dimensions / 2
   let result = robots.compactMap { robot in
     positionAfter(robot: robot, seconds: 100)
-  }.reduce(SIMD4<Num>.zero) { result, pos in
-    result
-      &+ SIMD4<Num>(
-        (pos.x < middle.x && pos.y < middle.y) ? 1 : 0,
-        (pos.x < middle.x && pos.y > middle.y) ? 1 : 0,
-        (pos.x > middle.x && pos.y < middle.y) ? 1 : 0,
-        (pos.x > middle.x && pos.y > middle.y) ? 1 : 0
-      )
+  }.compactMap { pos in
+    SIMD4<Num>(
+      (pos.x < middle.x && pos.y < middle.y) ? 1 : 0,
+      (pos.x < middle.x && pos.y > middle.y) ? 1 : 0,
+      (pos.x > middle.x && pos.y < middle.y) ? 1 : 0,
+      (pos.x > middle.x && pos.y > middle.y) ? 1 : 0)
+  }.reduce(SIMD4<Num>.zero) { result, counts in
+    result &+ counts
   }
 
   return result[0] * result[1] * result[2] * result[3]
@@ -28,7 +28,7 @@ func part1() -> Num {
 func part2() -> Num {
   for i: Num in 0... {
     let frame = robots.compactMap { robot in
-      positionAfter(robot: robot, seconds: Num(i))
+      positionAfter(robot: robot, seconds: i)
     }.uniqued()
     if frame.count == robots.count {
       drawFrame(
