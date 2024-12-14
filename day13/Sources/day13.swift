@@ -38,7 +38,7 @@ func part2() -> Int64 {
 func parseBlock(block: [Substring]) -> Block {
   block.compactMap { s in
     s.firstMatch(
-      of: /(Button [AB]|Prize): X.(\d+). Y.(\d+)/
+      of: /(Button [AB]|Prize): X.(\d+), Y.(\d+)/
     )
   }.reduce(into: Block()) {
     (block, match) in
