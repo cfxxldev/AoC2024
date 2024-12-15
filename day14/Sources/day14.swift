@@ -25,18 +25,18 @@ func part1() -> Num {
   return result[0] * result[1] * result[2] * result[3]
 }
 
-func part2() -> Num {
-  for i: Num in 0... {
+func part2() -> String {
+  for seconds: Num in 0..<(dimensions.x * dimensions.y) {
     let frame = robots.compactMap { robot in
-      positionAfter(robot: robot, seconds: i)
+      positionAfter(robot: robot, seconds: seconds)
     }.uniqued()
-    if frame.count == robots.count {
+    if maybeTree(positions: frame) {
       drawFrame(
         positions: frame)
-      return i
+      print("possible Tree after \(seconds) seconds")
     }
   }
-  return 0
+  return "Hopefully there was a tree"
 }
 
 func parseRobot(_ line: Substring) -> Robot? {
@@ -62,6 +62,21 @@ func drawFrame(positions: [Vector2D]) {
   for line in res {
     print(line.reduce(" ", +))
   }
+}
+
+func maybeTree(positions: [Vector2D]) -> Bool {
+  struct Consts {
+    static let l = Vector2D(-1, 1)
+    static let r = Vector2D(1, 1)
+  }
+  outerloop: for pos in positions {
+    for i: Num in 1...5 {
+      if positions.firstIndex(of: pos &+ (Consts.l &* i)) == nil { continue outerloop }
+      if positions.firstIndex(of: pos &+ (Consts.r &* i)) == nil { continue outerloop }
+    }
+    return true
+  }
+  return false
 }
 
 func addjustForDimensions(_ position: Vector2D) -> Vector2D {
