@@ -29,7 +29,7 @@ func part2() -> String {
   for seconds: Num in 0..<(dimensions.x * dimensions.y) {
     let frame = robots.compactMap { robot in
       positionAfter(robot: robot, seconds: seconds)
-    }.uniqued()
+    }.uniqued().toArray()
     if maybeTree(positions: frame) {
       drawFrame(
         positions: frame)
@@ -55,12 +55,12 @@ func parseRobot(_ line: Substring) -> Robot? {
 
 func drawFrame(positions: [Vector2D]) {
   var res = Array(
-    repeating: Array(repeating: " ", count: Int(dimensions.x)), count: Int(dimensions.y))
+    repeating: Array(repeating: ".", count: Int(dimensions.x)), count: Int(dimensions.y))
   for pos in positions {
     res[Int(pos.y)][Int(pos.x)] = "*"
   }
   for line in res {
-    print(line.reduce(" ", +))
+    print(line.reduce("", +))
   }
 }
 
@@ -71,8 +71,8 @@ func maybeTree(positions: [Vector2D]) -> Bool {
   }
   outerloop: for pos in positions {
     for i: Num in 1...5 {
-      if positions.firstIndex(of: pos &+ (Consts.l &* i)) == nil { continue outerloop }
-      if positions.firstIndex(of: pos &+ (Consts.r &* i)) == nil { continue outerloop }
+      guard positions.contains(pos &+ (Consts.l &* i)) else { continue outerloop }
+      guard positions.contains(pos &+ (Consts.r &* i)) else { continue outerloop }
     }
     return true
   }

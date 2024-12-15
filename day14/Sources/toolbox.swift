@@ -1,5 +1,5 @@
 extension Sequence where Element: Hashable {
-  func uniqued() -> [Element] {
+  func uniqued() -> some Sequence<Element> {
     var set = Set<Element>()
     return filter { set.insert($0).inserted }
   }
