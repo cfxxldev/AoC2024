@@ -1,3 +1,5 @@
+import CoreFoundation
+
 extension Sequence where Element: Hashable {
   func uniqued() -> some Sequence<Element> {
     var set = Set<Element>()
@@ -82,20 +84,38 @@ func toInt<T: FixedWidthInteger, U: LosslessStringConvertible>(_ value: U, retur
   toIntFunc(returnType)(value)
 }
 
-func printMap<T: LosslessStringConvertible>(_ map: [[T]]) {
-  for line in map {
-    print(line.reduce("") { result, c in result + String(c) })
+func cls() {
+  print("\u{001B}[2J")
+}
+
+func wait(_ seconds: UInt32) -> UInt32 {
+  sleep(seconds)
+}
+
+func printMap<T: CustomStringConvertible>(_ map: [[T]], _ path: [SIMD2<Int>] = []) {
+  for (y, line) in map.enumerated() {
+    print(
+      line.enumerated().reduce("") { (result, c) in
+        result + (path.contains([c.offset, y]) ? "*" : c.element.description)
+      })
   }
 }
 
-func printMap<T: CustomStringConvertible>(_ map: [[T]]) {
-  for line in map {
-    print(line.reduce("") { result, c in result + c.description })
+func printMap<T: RawRepresentable>(_ map: [[T]], _ path: [SIMD2<Int>] = [])
+where T.RawValue: CustomStringConvertible {
+  for (y, line) in map.enumerated() {
+    print(
+      line.enumerated().reduce("") { (result, c) in
+        result + (path.contains([c.offset, y]) ? "*" : c.element.rawValue.description)
+      })
   }
 }
 
-func printMap<T: LosslessStringConvertible>(_ map: [T]) {
-  for line in map {
-    print(line)
+func printMap<T: CustomStringConvertible>(_ map: [T], _ path: [SIMD2<Int>] = []) {
+  for (y, line) in map.enumerated() {
+    print(
+      line.description.enumerated().reduce("") { (result, c) -> String in
+        result + (path.contains([c.offset, y]) ? "*" : String(c.element))
+      })
   }
 }

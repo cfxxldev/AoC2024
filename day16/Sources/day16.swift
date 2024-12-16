@@ -6,23 +6,22 @@ enum Direction {
 let movements: [Direction: Vector2D] = [
   .west: [-1, 0], .north: [0, -1], .east: [1, 0], .south: [0, 1],
 ]
-enum FloorTile: Equatable {
-  case wall
-  case start
-  case end
-  case floor(maxCost: Num = Num.max)
+enum Orientation {
+  case ns, we
+}
+enum Tile: Character {
+  case wall = "#"
+  case start = "S"
+  case end = "E"
+  case floor = "."
 }
 
 let floorMap = fileContent.split(separator: "\n").compactMap { line in
-  line.compactMap { c -> FloorTile in
-    switch c {
-    case "#": .wall
-    case "S": .start
-    case "E": .end
-    default: .floor()
-    }
-  }
+  line.compactMap { c in Tile(rawValue: c) }
 }
+
+let width = floorMap[0].count
+let height = floorMap.count
 
 let startPosition: Vector2D = floorMap.enumerated().filter { line in
   line.element.contains(.start)
@@ -70,13 +69,24 @@ func turnLeft(_ direction: Direction) -> Direction {
   }
 }
 
+struct PathNode: Equatable, Hashable {
+  let orientation: Orientation
+  let pos: Vector2D
+
+  init(_ facing: Direction, _ position: Vector2D) {
+    self.pos = position
+    orientation = (facing == .north || facing == .south) ? .ns : .we
+  }
+}
+
 func findBestPaths() -> (maxCost: Num, countBestTiles: Int) {
   var bestPaths: [[Vector2D]] = []
   var maxCost = Num.max
-  var map = floorMap
 
-  func move(from: Direction, position: Vector2D, path: [Vector2D], cost: Num) {
-    if map[position.y][position.x] == .end {
+  var cache: [PathNode: Num] = [:]
+
+  func move(facing: Direction, position: Vector2D, path: [Vector2D], cost: Num) {
+    if floorMap[position.y][position.x] == .end {
       if cost < maxCost {
         maxCost = cost
         bestPaths.removeAll()
@@ -86,20 +96,26 @@ func findBestPaths() -> (maxCost: Num, countBestTiles: Int) {
       }
       return
     }
-    if map[position.y][position.x] == .wall { return }
-    if case .floor(let floorCost) = map[position.y][position.x] {
-      if cost > floorCost { return }
-      map[position.y][position.x] = .floor(maxCost: min(floorCost, cost))
-    }
+    if floorMap[position.y][position.x] == .wall { return }
     if cost > maxCost { return }
-    for dir in [turnLeft(from), turnRight(from), from] {
-      let newCost = cost + ((dir == from) ? 1 : 1001)
+
+    if path.firstIndex(where: { a in a == position }) != nil { return }
+
+    let pathNode = PathNode(facing, position)
+    let tileCost = cache[pathNode, default: Num.max]
+    if cost > tileCost { return }
+    cache[pathNode, default: Num.max] = min(tileCost, cost)
+
+    for dir in [facing, turnLeft(facing), turnRight(facing)] {
+      let newCost = cost + ((dir == facing) ? 1 : 1001)
       move(
-        from: dir, position: position &+ movements[dir]!, path: path + [position],
+        facing: dir,
+        position: position &+ movements[dir]!,
+        path: path + [position],
         cost: newCost)
     }
   }
-  move(from: .east, position: startPosition, path: [], cost: 0)
+  move(facing: .east, position: startPosition, path: [], cost: 0)
 
   return (maxCost: maxCost, countBestTiles: bestPaths.flattened().uniqued().toArray().count)
 }
