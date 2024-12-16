@@ -29,7 +29,7 @@ func part2() -> String {
   for seconds: Num in 0..<(dimensions.x * dimensions.y) {
     let frame = robots.compactMap { robot in
       positionAfter(robot: robot, seconds: seconds)
-    }.uniqued().toArray()
+    }.uniqued().sorted { a, b in a.y < b.y }
     if maybeTree(positions: frame) {
       drawFrame(
         positions: frame)
@@ -69,10 +69,10 @@ func maybeTree(positions: [Vector2D]) -> Bool {
     static let l = Vector2D(-1, 1)
     static let r = Vector2D(1, 1)
   }
-  outerloop: for pos in positions {
-    for i: Num in 1...5 {
-      guard positions.contains(pos &+ (Consts.l &* i)) else { continue outerloop }
-      guard positions.contains(pos &+ (Consts.r &* i)) else { continue outerloop }
+  outerloop: for (index, pos) in positions.enumerated() {
+    for i: Num in 1...3 {
+      guard positions.dropFirst(index).contains(pos &+ (Consts.l &* i)) else { continue outerloop }
+      guard positions.dropFirst(index).contains(pos &+ (Consts.r &* i)) else { continue outerloop }
     }
     return true
   }
