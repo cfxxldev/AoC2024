@@ -27,7 +27,9 @@ func part2() -> String {
 
 func findBlocker() -> Int? {
   func findBlocker(start: Int, stepWidth: Int) -> Int? {
-    if stepWidth == 0 {
+    if start >= blocks.count || start <= 0 {
+      nil
+    } else if stepWidth == 0 {
       start
     } else if findPath(blocks: blocks.prefix(start).toArray(), best: false) == nil {
       findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
