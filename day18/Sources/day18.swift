@@ -29,12 +29,10 @@ func findBlocker() -> Int? {
   func findBlocker(start: Int, stepWidth: Int) -> Int? {
     if start >= blocks.count || start <= 0 {
       nil
-    } else if stepWidth == 0 {
-      start
     } else if findPath(blocks: blocks.prefix(start).toArray(), best: false) == nil {
-      findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
+      stepWidth == 1 ? start : findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
     } else {
-      findBlocker(start: start + max(stepWidth / 2, 1), stepWidth: max(stepWidth / 2, 1))
+      stepWidth == 1 ? nil : findBlocker(start: start + (stepWidth / 2), stepWidth: stepWidth / 2)
     }
   }
   return findBlocker(start: blocks.count - 1, stepWidth: blocks.count)
