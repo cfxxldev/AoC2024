@@ -27,12 +27,12 @@ func part2() -> String {
 
 func findBlocker() -> Int? {
   func findBlocker(start: Int, stepWidth: Int) -> Int? {
-    if stepWidth == 0 { return start }
-    let found = findPath(blocks: blocks.prefix(start).toArray(), best: false) == nil
-    if found {
-      return findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
+    if stepWidth == 0 {
+      start
+    } else if findPath(blocks: blocks.prefix(start).toArray(), best: false) == nil {
+      findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
     } else {
-      return findBlocker(start: start + (stepWidth / 2), stepWidth: stepWidth / 2)
+      findBlocker(start: start + max(stepWidth / 2, 1), stepWidth: max(stepWidth / 2, 1))
     }
   }
   return findBlocker(start: blocks.count - 1, stepWidth: blocks.count)
