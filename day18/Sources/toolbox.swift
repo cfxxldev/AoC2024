@@ -127,30 +127,54 @@ func wait(_ seconds: UInt32) -> UInt32 {
   sleep(seconds)
 }
 
-func printMap<T: CustomStringConvertible>(_ map: [[T]], _ path: [SIMD2<Int>] = []) {
+func printMap<T: CustomStringConvertible, U: FixedWidthInteger>(
+  _ map: [[T]], _ path: [SIMD2<U>] = [SIMD2<Int>]()
+) {
   for (y, line) in map.enumerated() {
     print(
-      line.enumerated().reduce("") { (result, c) in
-        result + (path.contains([c.offset, y]) ? "*" : c.element.description)
+      line.enumerated().reduce(into: "") { (result, c) in
+        if path.contains([U(c.offset), U(y)]) {
+          result.append("\u{001B}[0;33mO")
+        } else if c.element.description == "#" {
+          result.append("\u{001B}[0;31m#")
+        } else {
+          result.append(c.element.description)
+        }
       })
   }
 }
 
-func printMap<T: RawRepresentable>(_ map: [[T]], _ path: [SIMD2<Int>] = [])
+func printMap<T: RawRepresentable, U: FixedWidthInteger>(
+  _ map: [[T]], _ path: [SIMD2<U>] = [SIMD2<Int>]()
+)
 where T.RawValue: CustomStringConvertible {
   for (y, line) in map.enumerated() {
     print(
-      line.enumerated().reduce("") { (result, c) in
-        result + (path.contains([c.offset, y]) ? "*" : c.element.rawValue.description)
+      line.enumerated().reduce(into: "") { (result, c) in
+        if path.contains([U(c.offset), U(y)]) {
+          result.append("\u{001B}[0;33mO")
+        } else if c.element.rawValue.description == "#" {
+          result.append("\u{001B}[0;31m#")
+        } else {
+          result.append(c.element.rawValue.description)
+        }
       })
   }
 }
 
-func printMap<T: CustomStringConvertible>(_ map: [T], _ path: [SIMD2<Int>] = []) {
+func printMap<T: CustomStringConvertible, U: FixedWidthInteger>(
+  _ map: [T], _ path: [SIMD2<U>] = [SIMD2<Int>]()
+) {
   for (y, line) in map.enumerated() {
     print(
-      line.description.enumerated().reduce("") { (result, c) -> String in
-        result + (path.contains([c.offset, y]) ? "*" : String(c.element))
+      line.description.enumerated().reduce(into: "") { (result, c) in
+        if path.contains([U(c.offset), U(y)]) {
+          result.append("\u{001B}[0;33mO")
+        } else if c.element == "#" {
+          result.append("\u{001B}[0;31m#")
+        } else {
+          result.append(c.element)
+        }
       })
   }
 }
@@ -162,13 +186,14 @@ func printMap<T: FixedWidthInteger, U: FixedWidthInteger>(
 ) {
   for y in 0..<height {
     print(
-      String(repeating: ".", count: Int(width)).enumerated().reduce(into: "") { (result, c) in
-        if walls.contains([T(c.offset), T(y)]) {
-          result.append("#")
-        } else if path.contains([U(c.offset), U(y)]) {
-          result.append("O")
+      (0..<width).reduce(into: "") {
+        (result, x) in
+        if walls.contains([T(x), T(y)]) {
+          result.append("\u{001B}[0;31m#")
+        } else if path.contains([U(x), U(y)]) {
+          result.append("\u{001B}[0;33mO")
         } else {
-          result.append(c.element)
+          result.append("\u{001B}[0;0m.")
         }
       })
   }
