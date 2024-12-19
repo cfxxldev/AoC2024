@@ -21,21 +21,10 @@ func part1() -> Num {
 }
 
 func part2() -> String {
-  let index = findBlocker()! - 1
+  let index = blocks.fastFirstIndex { index in
+    findPath(blocks: blocks.prefix(index + 1).toArray(), best: false) == nil
+  }!
   return String("\(blocks[index].x),\(blocks[index].y)")
-}
-
-func findBlocker() -> Int? {
-  func findBlocker(start: Int, stepWidth: Int) -> Int? {
-    if start >= blocks.count || start <= 0 {
-      nil
-    } else if findPath(blocks: blocks.prefix(start).toArray(), best: false) == nil {
-      stepWidth == 1 ? start : findBlocker(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
-    } else {
-      stepWidth == 1 ? nil : findBlocker(start: start + (stepWidth / 2), stepWidth: stepWidth / 2)
-    }
-  }
-  return findBlocker(start: blocks.count - 1, stepWidth: blocks.count)
 }
 
 func findPath(blocks: [Vector2D], best: Bool) -> Num? {
@@ -62,7 +51,11 @@ func findPath(blocks: [Vector2D], best: Bool) -> Num? {
     if cost >= tileCost { return false }
     tileCosts[Int(position.y)][Int(position.x)] = cost
 
-    for dir in [facing, turnLeft(facing), turnRight(facing)] {
+    for dir in [facing, turnLeft(facing), turnRight(facing)].sorted(by: { dir1, dir2 in
+      let p1 = position &+ movements[dir1]!
+      let p2 = position &+ movements[dir2]!
+      return distance(p1, endPosition) < distance(p2, endPosition)
+    }) {
       let newCost = cost + 1
       if move(
         facing: dir,

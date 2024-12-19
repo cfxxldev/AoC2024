@@ -106,6 +106,22 @@ extension Array {
       self.swapAt(leftIndex + i, rightIndex + i)
     }
   }
+
+  func fastFirstIndex(_ when: (Index) -> Bool) -> Index? {
+    guard self.count > 0 else { return nil }
+    if when(0) { return 0 }
+    func find(start: Index, stepWidth: Index) -> Index? {
+      if start < 0 || start >= self.count {
+        nil
+      } else if when(start) {
+        stepWidth == 1 ? start : find(start: start - (stepWidth / 2), stepWidth: stepWidth / 2)
+      } else {
+        find(start: start + Swift.max(stepWidth / 2, 1), stepWidth: Swift.max(stepWidth / 2, 1))
+      }
+    }
+    return find(start: self.count - 1, stepWidth: self.count)
+  }
+
 }
 
 func toIntFunc<T: FixedWidthInteger, U: LosslessStringConvertible>(_ returnType: T.Type) -> (U) ->
@@ -117,6 +133,12 @@ func toIntFunc<T: FixedWidthInteger, U: LosslessStringConvertible>(_ returnType:
 func toInt<T: FixedWidthInteger, U: LosslessStringConvertible>(_ value: U, returnType: T.Type) -> T?
 {
   toIntFunc(returnType)(value)
+}
+
+func distance(_ v1: Vector2D, _ v2: Vector3D) -> Double {
+  let d = v2 &- v1
+  let s = (d &* d).wrappedSum()
+  return sqrt(Double(s))
 }
 
 func cls() {
