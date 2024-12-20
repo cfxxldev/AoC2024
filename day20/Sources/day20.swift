@@ -45,35 +45,28 @@ class Main {
   }
 
   static func computeDistanceMap() -> [[Int]] {
-    var startPosition = Vector2D.zero
-    var endPosition = Vector2D.zero
+    var _startPosition = Vector2D.zero
+    var _endPosition = Vector2D.zero
     var _distanceMap = fileContent.split(separator: "\n").enumerated().compactMap { y, line in
       line.enumerated().compactMap { x, c -> Int in
         if c == "S" {
-          startPosition = Vector2D(x, y)
+          _startPosition = Vector2D(x, y)
+          return 0
         } else if c == "E" {
-          endPosition = Vector2D(x, y)
+          _endPosition = Vector2D(x, y)
         }
         return if c == "#" { -1 } else { Int.max }
       }
     }
 
-    func _updateMap(position: Vector2D, distance: Int) -> Bool {
-      let dist = _distanceMap[position.y][position.x]
-      if distance >= dist { return false }
-      _distanceMap[position.y][position.x] = distance
-      return true
-    }
-
-    _ = _updateMap(position: startPosition, distance: 0)
-
-    var position = startPosition
-    var distance = Int.zero
-    while position != endPosition {
+    var _position = _startPosition
+    var _distance = Int.zero
+    while _position != _endPosition {
       for (_, movement) in movements {
-        if _updateMap(position: position &+ movement, distance: distance + 1) {
-          position &+= movement
-          distance += 1
+        if _distanceMap[_position.y + movement.y][_position.x + movement.x] >= _distance + 1 {
+          _distanceMap[_position.y + movement.y][_position.x + movement.x] = _distance + 1
+          _position &+= movement
+          _distance += 1
           break
         }
       }
